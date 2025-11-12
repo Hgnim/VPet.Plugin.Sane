@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	<TargetFramework>net8.0-windows</TargetFramework>
+	<OutputType>Library</OutputType>
+	<UseWPF>true</UseWPF>
+	<ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
+
+	  <AssemblyVersion>1.0.0.1112</AssemblyVersion>
+	  <FileVersion>1.0.0.1112</FileVersion>
+	  <VersionPrefix>1.0.0.20251112</VersionPrefix>
+	  <VersionSuffix>debug</VersionSuffix>
+
+	  <Authors>Hgnim</Authors>
+	  <Company>$(Authors)</Company>
+	  <Owners>$(Authors)</Owners>
+	  <Product>VPet.Plugin.Sane</Product>
+	  <Title>桌宠理智插件</Title>
+	  <AssemblyTitle>$(Title)</AssemblyTitle>
+	  <Description>Sane</Description>
+	  <AssemblyName>Sane</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+  	<PackageReference Include="VPet-Simulator.Core" Version="1.1.0.48" />
+  	<PackageReference Include="VPet-Simulator.Windows.Interface" Version="1.1.0.48" />
+  </ItemGroup>
+
+</Project>
