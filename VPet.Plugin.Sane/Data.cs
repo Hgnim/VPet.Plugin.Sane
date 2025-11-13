@@ -10,11 +10,52 @@ namespace VPet.Plugin.Sane {
 		internal double SaneValue {
 			get => saneValue;
 			set { 
-				saneValue = value > 0 ? value : 0; 
+				saneValue = 
+					value > 0 
+					? value <= 100
+						? value 
+						: 100
+					: 0;
+				if (saneValue > 90) {
+					if (saneStatus != SaneType.hight) {
+						saneStatus = SaneType.hight;
+						OnSaneStatusChanged?.Invoke(SaneStatus);
+					}
+				}
+				else if (saneValue > 50) {
+					if (saneStatus != SaneType.normal) {
+						saneStatus = SaneType.normal;
+						OnSaneStatusChanged?.Invoke(SaneStatus);
+					}
+				}
+				else if (saneValue > 20) {
+					if (saneStatus != SaneType.low) {
+						saneStatus = SaneType.low;
+						OnSaneStatusChanged?.Invoke(SaneStatus);
+					}
+				}
+				else {
+					if (saneStatus != SaneType.danger) {
+						saneStatus = SaneType.danger;
+						OnSaneStatusChanged?.Invoke(SaneStatus);
+					}
+				}
 				OnSaneValueChanged?.Invoke(saneValue);
 			}
 		}
+		/// <summary>
+		/// 理智值更改
+		/// </summary>
 		internal event Action<double> OnSaneValueChanged;
+		internal enum SaneType {
+			hight,normal,low,danger
+		}
+		internal event Action<SaneType> OnSaneStatusChanged;
+		private SaneType saneStatus = SaneType.hight;
+		/// <summary>
+		/// 当前理智状态
+		/// </summary>
+		internal SaneType SaneStatus => saneStatus;
 	}
 	internal struct DataSave {
 		const string mainKey = "Sane";
