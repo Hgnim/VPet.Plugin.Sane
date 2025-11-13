@@ -7,3 +7,5 @@
 桌宠也需要劳逸结合呢:D
 
 该插件目前为测试版，可先行订阅体验，尽请期待后续更新。如有想法与建议，可前往Github仓库提交Issue或Pull Request。
+
+创意工坊：https://steamcommunity.com/sharedfiles/filedetails/?id=3604986512
