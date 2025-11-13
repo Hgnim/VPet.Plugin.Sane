@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LinePutScript.Localization.WPF;
+using System;
 using System.Timers;
 using VPet_Simulator.Windows.Interface;
 using static VPet_Simulator.Core.GraphHelper;
@@ -13,11 +14,8 @@ namespace VPet.Plugin.Sane
 
 		GdPanelAction gpa;
 		readonly Data dat = new();
-		Lang lan = new();
 
 		public override void LoadPlugin() {
-			lan = Lang.ReadData(Lang.ReadData("lang.yml").UseLanguage);
-			MW.Main.Say(MW.Set.Language);
 			dat.SaneValue = DataSave.SaneValue_Exist(MW)
 					? (double)DataSave.SaneValue_Get(MW)
 					: MW.Core.Save.Health;
@@ -25,7 +23,7 @@ namespace VPet.Plugin.Sane
 				MW,
 				new GdPanelAction.GdPanelItem() {
 					text = new() {
-						Text= lan.Language.UserInterface.ProgBarTitle,
+						Text= Langs.UI.progBarTitle,
 					},
 					progressBar = new() {
 						Value=dat.SaneValue,
