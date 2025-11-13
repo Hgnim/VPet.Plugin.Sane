@@ -1,10 +1,8 @@
-﻿using LinePutScript.Localization.WPF;
-using Panuon.WPF.UI;
+﻿using Panuon.WPF.UI;
 using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using VPet_Simulator.Core;
 using VPet_Simulator.Windows.Interface;
 
 namespace VPet.Plugin.Sane {
@@ -56,20 +54,22 @@ namespace VPet.Plugin.Sane {
 		/// <summary>
 		/// 初始化
 		/// </summary>
-		/// <param name="item_">条目</param>
 		/// <param name="MW">IMainWindow</param>
+		/// <param name="item_">条目</param>
 		/// <param name="grid">目标Grid</param>
-		internal GdPanelAction(GdPanelItem item_,Grid grid) {
+		internal GdPanelAction(IMainWindow MW, GdPanelItem item_,Grid grid) {
 			item = item_;
 			AddBar(grid);
+			ChangeForeground(MW);
 		}
-		internal static Brush GetForeground(IMainWindow MW, double value) => 
+
+		internal static Brush GetForeground(IMainWindow MW, double value) =>
 			value > 0.5
 				? MW.Main.FindResource("SuccessProgressBarForeground") as Brush
 				: value > 0.2
 					? MW.Main.FindResource("WarningProgressBarForeground") as Brush
 					: MW.Main.FindResource("DangerProgressBarForeground") as Brush;
-
+		internal void ChangeForeground(IMainWindow MW) => item.progressBar.Foreground = GetForeground(MW, item.progressBar.Value / 100);
 		double lastValue = 0;
 		internal void ProgressBar_Change(IMainWindow MW,double value) {
 			item.progressBar.Value = value;
@@ -89,7 +89,7 @@ namespace VPet.Plugin.Sane {
 				else
 					item.changeText.Text = $"{valueDiff:f0}/ht";
 			}
-			item.progressBar.Foreground = GetForeground(MW, item.progressBar.Value / 100);
+			ChangeForeground(MW);
 		}
 	}
 }

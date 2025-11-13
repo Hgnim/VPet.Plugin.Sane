@@ -1,10 +1,5 @@
-﻿using LinePutScript.Localization.WPF;
-using Panuon.WPF.UI;
-using System;
+﻿using System;
 using System.Timers;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Media;
 using VPet_Simulator.Windows.Interface;
 using static VPet_Simulator.Core.GraphHelper;
 using static VPet_Simulator.Core.WorkTimer;
@@ -18,53 +13,71 @@ namespace VPet.Plugin.Sane
 
 		GdPanelAction gpa;
 		readonly Data dat = new();
+		Lang lan = new();
 
 		public override void LoadPlugin() {
-			dat.SaneValue = MW.Core.Save.Health;//目前的理智值初始值为从进入游戏时的健康值开始，后续将为其添加存档支持
+			lan = Lang.ReadData(Lang.ReadData("lang.yml").UseLanguage);
+			MW.Main.Say(MW.Set.Language);
+			dat.SaneValue = DataSave.SaneValue_Exist(MW)
+					? (double)DataSave.SaneValue_Get(MW)
+					: MW.Core.Save.Health;
 			gpa = new(
+				MW,
 				new GdPanelAction.GdPanelItem() {
 					text = new() {
-						Text= "理智",//.Translate();
+						Text= lan.Language.UserInterface.ProgBarTitle,
 					},
 					progressBar = new() {
 						Value=dat.SaneValue,
 						Maximum=100,
 					},
 				}, 
-				MW.Main.ToolBar.gdPanel);//初始化
+				MW.Main.ToolBar.gdPanel
+				);//初始化
 
 			MW.Main.Event_WorkStart += WorkStart;
 			MW.Main.Event_WorkEnd += WorkEnd;
 			MW.Main.EventTimer.Elapsed += TickElapsed;
 			dat.OnSaneValueChanged += (v) => MW.Dispatcher.Invoke(/*调用UI线程*/() => gpa.ProgressBar_Change(MW, v));
 		}
+		void SaveData() {
+			DataSave.SaneValue_Set(MW, dat.SaneValue);
+		}
+		void SaveConfig() { }
+		public override void Save() {
+			SaveData();
+			base.Save();
+		}
+		public override void EndGame() {
+			SaveData();
+			base.EndGame();
+		}
 
 		Work nowWork = null;
 		void WorkStart(Work work) {
 			nowWork= work;
-			//MW.Main.Say($"开始工作{nowWork}");
 		}
 		void WorkEnd(FinishWorkInfo finishWorkInfo) {
 			nowWork= null;
-			//MW.Main.Say($"结束工作{nowWork}");
 		}
 		/// <summary>
 		/// 游戏每个tick的调用
 		/// </summary>
 		void TickElapsed(object sender,ElapsedEventArgs e) {
-			try {
-				
-				if(nowWork != null) {
-					/*switch (nowWork) {
-						case Work.WorkType.Work:
-						case Work.WorkType.Study:
-							break;
-						case Work.WorkType.Play:
-							break;
-					}*/
-					dat.SaneValue += -nowWork.Feeling * 0.5; //(nowWork != null) ? -nowWork.Feeling * 0.5 : 0;
+			if(nowWork != null) {
+				/*switch (nowWork) {
+					case Work.WorkType.Work:
+					case Work.WorkType.Study:
+						break;
+					case Work.WorkType.Play:
+						break;
+				}*/
+				double changv=-nowWork.Feeling * 0.5;
+				while (Math.Abs(changv) > 0.7) {
+					changv *= 0.1;//减小变化计算
 				}
-			} catch (Exception ex){ MW.Main.Say(ex.Message); }
+				dat.SaneValue += changv;
+			}
 		}
 	}
 }
