@@ -3,6 +3,7 @@ using System;
 using System.Timers;
 using System.Windows;
 using System.Windows.Documents;
+using System.Windows.Media;
 using VPet_Simulator.Windows.Interface;
 using static VPet_Simulator.Core.GraphHelper;
 using static VPet_Simulator.Core.WorkTimer;
@@ -66,7 +67,7 @@ namespace VPet.Plugin.Sane
 			MW.Main.Event_WorkEnd += WorkEnd;
 			MW.Main.EventTimer.Elapsed += TickElapsed;
 			MW.Event_TakeItem += TakeItem;
-			dat.OnSaneValueChanged += (v) => MW.Dispatcher.Invoke(/*调用UI线程*/() => gpa.ProgressBar_Change(MW, v));
+			dat.OnSaneValueChanged += SaneValue_Change;
 			dat.OnSaneStatusChanged += SaneStatus_Change;
 		}
 		void SaveData() {
@@ -84,30 +85,21 @@ namespace VPet.Plugin.Sane
 
 		Work nowWork = null;
 		void WorkStart(Work work) {
-			nowWork= work;
+			nowWork = work;
 			{
 				Random ran = new();
 				switch (dat.SaneStatus) {
 					case Data.SaneType.hight:
 					case Data.SaneType.normal:
-						if (ran.Next(10) == 0) {//十分之一的概率说话
-							switch (dat.SaneStatus) {
-								case Data.SaneType.hight:
-									MW.Main.Say(Langs.SpeakC.GetSpeakRan(lang.Speak.hightSaneSay));
-									break;
-								case Data.SaneType.normal:
-									MW.Main.Say(Langs.SpeakC.GetSpeakRan(lang.Speak.normalSaneSay));
-									break;
-							}
-						}
+						if (ran.Next(10) == 0)//十分之一的概率说话
+							SaneStatus_Change(dat.SaneStatus);
 						break;
 					case Data.SaneType.low:
-						if (ran.Next(2) == 0) {//二分之一的概率说话
-							MW.Main.Say(Langs.SpeakC.GetSpeakRan(lang.Speak.lowSaneSay));
-						}
+						if (ran.Next(2) == 0)//二分之一的概率说话
+							SaneStatus_Change(dat.SaneStatus);
 						break;
 					case Data.SaneType.danger:
-						MW.Main.Say(Langs.SpeakC.GetSpeakRan(lang.Speak.dangerSaneSay));
+						SaneStatus_Change(dat.SaneStatus);
 						break;
 				}
 			}
@@ -116,27 +108,43 @@ namespace VPet.Plugin.Sane
 			nowWork= null;
 		}
 		void TakeItem(Food food) {
-			{
-				double changv = food.Health * 0.5;
-				while (Math.Abs(changv) > 10) {
-					changv *= 0.1;//减小变化计算
-				}
-				dat.SaneValue += changv;
-			}
+			dat.SaneTempValue += food.Health * 0.5;
 		}
+		void SaneValue_Change(double value) =>
+			//调用UI线程
+			MW.Dispatcher.Invoke(() => 
+				gpa.ProgressBar_Change(MW, value+dat.SaneTempValue, changeForeground: () => {
+					if (dat.HaveSaneTemp)
+						gpa.ChangeForeground(MW, GdPanelAction.GetForeground(MW, dat.SaneValue / Data.saneMax));
+					else
+						gpa.ChangeForeground(MW);
+				})
+			);
 		void SaneStatus_Change(Data.SaneType s) {
 			switch (s) {
 				case Data.SaneType.hight:
 					MW.Main.Say(Langs.SpeakC.GetSpeakRan(lang.Speak.hightSaneSay));
 					break;
+				case Data.SaneType.hight_temp:
+					MW.Main.Say(Langs.SpeakC.GetSpeakRan(lang.Speak.hightTempSaneSay));
+					break;
 				case Data.SaneType.normal:
 					MW.Main.Say(Langs.SpeakC.GetSpeakRan(lang.Speak.normalSaneSay));
+					break;
+				case Data.SaneType.normal_temp:
+					MW.Main.Say(Langs.SpeakC.GetSpeakRan(lang.Speak.normalTempSaneSay));
 					break;
 				case Data.SaneType.low:
 					MW.Main.Say(Langs.SpeakC.GetSpeakRan(lang.Speak.lowSaneSay));
 					break;
+				case Data.SaneType.low_temp:
+					MW.Main.Say(Langs.SpeakC.GetSpeakRan(lang.Speak.lowTempSaneSay));
+					break;
 				case Data.SaneType.danger:
 					MW.Main.Say(Langs.SpeakC.GetSpeakRan(lang.Speak.dangerSaneSay));
+					break;
+				case Data.SaneType.danger_temp:
+					MW.Main.Say(Langs.SpeakC.GetSpeakRan(lang.Speak.dangerTempSaneSay));
 					break;
 			}
 		}
@@ -145,40 +153,53 @@ namespace VPet.Plugin.Sane
 		/// </summary>
 		void TickElapsed(object sender,ElapsedEventArgs e) {
 			if(nowWork != null) {
-				/*switch (nowWork) {
+				switch (nowWork.Type) {
 					case Work.WorkType.Work:
-					case Work.WorkType.Study:
+					case Work.WorkType.Study: {
+							double changv = -nowWork.Feeling * 0.8;
+							while (Math.Abs(changv) > 0.2) {
+								changv *= 0.3;//减小变化计算
+							}
+							dat.SaneValue += changv;
+						}
 						break;
-					case Work.WorkType.Play:
+					case Work.WorkType.Play: {
+							double changv = -nowWork.Feeling;
+							while (Math.Abs(changv) > 1) {
+								changv *= 0.5;
+							}
+							dat.SaneValue += changv;
+						}
 						break;
-				}*/
-				double changv=-nowWork.Feeling * 0.5;
-				while (Math.Abs(changv) > 0.7) {
-					changv *= 0.1;//减小变化计算
 				}
-				dat.SaneValue += changv;
 			}
 			else {
 				dat.SaneValue += 0.01;//静止时缓慢恢复理智
 			}
-			if (dat.SaneStatus is Data.SaneType.low or Data.SaneType.danger) {
-				MW.Core.Save.Health--;
-				if (dat.SaneStatus == Data.SaneType.danger && MW.Core.Save.Health>20)
-					MW.Core.Save.Health = 20;//理智值过低时强制降低健康值
+			if (dat.SaneStatus is Data.SaneType.low or Data.SaneType.low_temp or Data.SaneType.danger or Data.SaneType.danger_temp) {
+				MW.Core.Save.Health -= (50 - dat.SaneValue)*0.06;//理智值越低，健康值下降越快
+				if (
+					(dat.SaneStatus is Data.SaneType.danger or Data.SaneType.danger_temp) && 
+					MW.Core.Save.Health>40
+					)
+					MW.Core.Save.Health = 40;//理智值过低时强制降低健康值
 				Random ran = new();
 				switch (dat.SaneStatus) {
 					case Data.SaneType.low:
-						if(ran.Next(Math.Abs((int)(60 - 2 * MW.Set.LogicInterval))) == 0) {//函数y=a-2x, a=60
-							MW.Main.Say(Langs.SpeakC.GetSpeakRan(lang.Speak.lowSaneSay));
-						}
+					case Data.SaneType.low_temp:
+						if(ran.Next(Math.Abs((int)(60 - 2 * MW.Set.LogicInterval))) == 0)//函数y=a-2x, a=60
+							SaneStatus_Change(dat.SaneStatus);
 						break;
 					case Data.SaneType.danger:
-						if (ran.Next(Math.Abs((int)(50 - 4 * MW.Set.LogicInterval))) == 0) {//函数y=a-4x，a=50
-							MW.Main.Say(Langs.SpeakC.GetSpeakRan(lang.Speak.dangerSaneSay));
-						}
+					case Data.SaneType.danger_temp:
+						if (ran.Next(Math.Abs((int)(50 - 4 * MW.Set.LogicInterval))) == 0)//函数y=a-4x，a=50
+							SaneStatus_Change(dat.SaneStatus);
 						break;
 				}
 			}
+			//通过药物恢复的理智将根据时间逐渐减少
+			if (dat.HaveSaneTemp)
+				dat.SaneTempValue_SelfReduce();
 		}
 	}
 }

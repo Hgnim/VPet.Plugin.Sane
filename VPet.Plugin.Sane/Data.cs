@@ -3,7 +3,9 @@ using VPet_Simulator.Windows.Interface;
 
 namespace VPet.Plugin.Sane {
 	internal class Data {
-		private double saneValue = 100;
+		internal const double saneMax = 100;
+		internal const double saneMin = 0;
+		private double saneValue = saneMax;
 		/// <summary>
 		/// 理智值
 		/// </summary>
@@ -11,36 +13,14 @@ namespace VPet.Plugin.Sane {
 			get => saneValue;
 			set { 
 				saneValue = 
-					value > 0 
-					? value <= 100
+					value > saneMin
+					? value <= saneMax
 						? value 
-						: 100
-					: 0;
-				if (saneValue > 90) {
-					if (saneStatus != SaneType.hight) {
-						saneStatus = SaneType.hight;
-						OnSaneStatusChanged?.Invoke(SaneStatus);
-					}
-				}
-				else if (saneValue > 50) {
-					if (saneStatus != SaneType.normal) {
-						saneStatus = SaneType.normal;
-						OnSaneStatusChanged?.Invoke(SaneStatus);
-					}
-				}
-				else if (saneValue > 20) {
-					if (saneStatus != SaneType.low) {
-						saneStatus = SaneType.low;
-						OnSaneStatusChanged?.Invoke(SaneStatus);
-					}
-				}
-				else {
-					if (saneStatus != SaneType.danger) {
-						saneStatus = SaneType.danger;
-						OnSaneStatusChanged?.Invoke(SaneStatus);
-					}
-				}
+						: saneMax
+					: saneMin;
+				SaneStatus_Judg();
 				OnSaneValueChanged?.Invoke(saneValue);
+				SaneTempChange_ForSaneValue();
 			}
 		}
 		/// <summary>
@@ -48,14 +28,100 @@ namespace VPet.Plugin.Sane {
 		/// </summary>
 		internal event Action<double> OnSaneValueChanged;
 		internal enum SaneType {
-			hight,normal,low,danger
+			hight,normal,low,danger,
+			//通过SaneTempValue达到目标状态后的状态
+			hight_temp, normal_temp,low_temp, danger_temp,
 		}
 		internal event Action<SaneType> OnSaneStatusChanged;
 		private SaneType saneStatus = SaneType.hight;
+		private void SaneStatus_Set(SaneType value) {
+			saneStatus = value;
+			OnSaneStatusChanged?.Invoke(SaneStatus);
+		}
 		/// <summary>
 		/// 当前理智状态
 		/// </summary>
 		internal SaneType SaneStatus => saneStatus;
+		private void SaneStatus_Judg() {
+			if (SaneValue + SaneTempValue > 90) {
+				if (SaneValue > 90) {
+					if (SaneStatus != SaneType.hight) {
+						SaneStatus_Set(SaneType.hight);
+					}
+				}
+				else {
+					if(SaneStatus!=SaneType.hight_temp) {
+						SaneStatus_Set(SaneType.hight_temp);
+					}
+				}
+			}
+			else if (SaneValue + SaneTempValue > 50) {
+				if (SaneValue > 50) {
+					if (SaneStatus != SaneType.normal) {
+						SaneStatus_Set(SaneType.normal);
+					}
+				}
+				else {
+					if (SaneStatus != SaneType.normal_temp) {
+						SaneStatus_Set(SaneType.normal_temp);
+					}
+				}
+			}
+			else if (SaneValue + SaneTempValue > 20) {
+				if (SaneValue > 20) {
+					if (SaneStatus != SaneType.low) {
+						SaneStatus_Set(SaneType.low);
+					}
+				}
+				else {
+					if(SaneStatus!=SaneType.low_temp) {
+						SaneStatus_Set(SaneType.low_temp);
+					}
+				}
+			}
+			else {
+				if (HaveSaneTemp) {
+					if (SaneStatus != SaneType.danger_temp) {
+						SaneStatus_Set(SaneType.danger_temp);
+					}
+				}
+				else {
+					if (SaneStatus != SaneType.danger) {
+						SaneStatus_Set(SaneType.danger);
+					}
+				}
+			}
+		}
+
+		private double saneTempValue = 0;
+		/// <summary>
+		/// 临时理智值，通过药物获得，将持续减小至0
+		/// </summary>
+		internal double SaneTempValue {
+			get => saneTempValue;
+			set {
+				saneTempValue = 
+					value > 0 
+					? value + SaneValue <= saneMax 
+						? value 
+						: saneMax - SaneValue 
+					: 0;
+				SaneStatus_Judg();
+			}
+		}
+		internal bool HaveSaneTemp => SaneTempValue > 0.1;//使用0.1作为判断依据，因为自减少函数每次减1%导致难以达到0
+		/// <summary>
+		/// 跟随SaneValue进行自我修正
+		/// </summary>
+		private void SaneTempChange_ForSaneValue() {
+			if (SaneTempValue + SaneValue > saneMax) 
+				saneTempValue = saneMax - SaneValue;
+		}
+		/// <summary>
+		/// 自我减少函数，可根据实际使用调用<br/>
+		/// 每调用一次根据算法减少一定的值
+		/// </summary>
+		internal void SaneTempValue_SelfReduce() => SaneTempValue -= 0.1 * SaneTempValue;
 	}
 	internal struct DataSave {
 		const string mainKey = "Sane";

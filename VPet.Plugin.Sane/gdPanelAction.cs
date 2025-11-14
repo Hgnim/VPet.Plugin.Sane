@@ -69,9 +69,19 @@ namespace VPet.Plugin.Sane {
 				: value > 0.2
 					? MW.Main.FindResource("WarningProgressBarForeground") as Brush
 					: MW.Main.FindResource("DangerProgressBarForeground") as Brush;
-		internal void ChangeForeground(IMainWindow MW) => item.progressBar.Foreground = GetForeground(MW, item.progressBar.Value / 100);
+		/// <summary>
+		/// 更改进度条前景色
+		/// </summary>
+		/// <param name="customBr">自定义刷子。如果留空则使用默认</param>
+		internal void ChangeForeground(IMainWindow MW,Brush customBr=null) =>
+			item.progressBar.Foreground = customBr ?? GetForeground(MW, item.progressBar.Value / 100);
 		double lastValue = 0;
-		internal void ProgressBar_Change(IMainWindow MW,double value) {
+		/// <summary>
+		/// 更改进度条的值
+		/// </summary>
+		/// <param name="value">值</param>
+		/// <param name="changeForeground">更改前景色的函数。如果留空，则执行默认函数</param>
+		internal void ProgressBar_Change(IMainWindow MW,double value,Action changeForeground=null) {
 			item.progressBar.Value = value;
 
 			double valueDiff = value-lastValue;
@@ -79,17 +89,20 @@ namespace VPet.Plugin.Sane {
 			{
 				double abs = Math.Abs(valueDiff);
 				if (abs > 0.1)
-					item.changeText.Text = $"{valueDiff:f1}/ht";
+					item.changeText.Text = $"{valueDiff:f1}/t";
 				else if (abs > 0.01)
-					item.changeText.Text = $"{valueDiff:f2}/ht";
+					item.changeText.Text = $"{valueDiff:f2}/t";
 				else if (abs > 0.001)
-					item.changeText.Text = $"{valueDiff:f3}/ht";
+					item.changeText.Text = $"{valueDiff:f3}/t";
 				else if (abs != 0)
-					item.changeText.Text = $"{valueDiff:f4}/ht";
+					item.changeText.Text = $"{valueDiff:f4}/t";
 				else
-					item.changeText.Text = $"{valueDiff:f0}/ht";
+					item.changeText.Text = $"{valueDiff:f0}/t";
 			}
-			ChangeForeground(MW);
+			if (changeForeground != null)
+				changeForeground.Invoke();
+			else
+				ChangeForeground(MW);
 		}
 	}
 }

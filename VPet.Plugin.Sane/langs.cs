@@ -29,12 +29,21 @@ namespace VPet.Plugin.Sane {
 			internal readonly ClickText[] normalSaneSay;
 			internal readonly ClickText[] lowSaneSay;
 			internal readonly ClickText[] dangerSaneSay;
+			internal readonly ClickText[] hightTempSaneSay;
+			internal readonly ClickText[] normalTempSaneSay;
+			internal readonly ClickText[] lowTempSaneSay;
+			internal readonly ClickText[] dangerTempSaneSay;
 			static SpeakC() => speakC_func = (MW) => new SpeakC(MW);
 			private SpeakC(IMainWindow MW) {
 				hightSaneSay = [.. MW.ClickTexts.FindAll(x => x.Working == "sepak_hightSaneSay")];//List<ClickText>.ToArray();
 				normalSaneSay = [.. MW.ClickTexts.FindAll(x => x.Working == "sepak_normalSaneSay")];
 				lowSaneSay = [.. MW.ClickTexts.FindAll(x => x.Working == "sepak_lowSaneSay")];
 				dangerSaneSay = [.. MW.ClickTexts.FindAll(x => x.Working == "sepak_dangerSaneSay")];
+
+				hightTempSaneSay = [.. MW.ClickTexts.FindAll(x => x.Working == "sepak_hightTempSaneSay")];
+				normalTempSaneSay = [.. MW.ClickTexts.FindAll(x => x.Working == "sepak_normalTempSaneSay")];
+				lowTempSaneSay = [.. MW.ClickTexts.FindAll(x => x.Working == "sepak_lowTempSaneSay")];
+				dangerTempSaneSay = [.. MW.ClickTexts.FindAll(x => x.Working == "sepak_dangerTempSaneSay")];
 			}
 			internal static string GetSpeakRan(ClickText[] say) => say[new Random().Next(say.Length)].TranslateText;
 		}
