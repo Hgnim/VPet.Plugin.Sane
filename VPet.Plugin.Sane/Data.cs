@@ -44,13 +44,13 @@ namespace VPet.Plugin.Sane {
 		internal SaneType SaneStatus => saneStatus;
 		private void SaneStatus_Judg() {
 			if (SaneValue + SaneTempValue > 90) {
-				if (SaneValue > 90) {
+				if (SaneValue > 90) {//无需药物即可达到该状态
 					if (SaneStatus != SaneType.hight) {
 						SaneStatus_Set(SaneType.hight);
 					}
 				}
-				else {
-					if(SaneStatus!=SaneType.hight_temp) {
+				else {//依靠药物达到该状态
+					if (SaneStatus!=SaneType.hight_temp) {
 						SaneStatus_Set(SaneType.hight_temp);
 					}
 				}

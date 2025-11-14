@@ -6,9 +6,9 @@
 	<UseWPF>true</UseWPF>
 	<ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
 
-	  <AssemblyVersion>1.0.0.1113</AssemblyVersion>
-	  <FileVersion>1.0.0.1113</FileVersion>
-	  <VersionPrefix>1.0.0.20251113</VersionPrefix>
+	  <AssemblyVersion>1.1.0.1114</AssemblyVersion>
+	  <FileVersion>1.1.0.1114</FileVersion>
+	  <VersionPrefix>1.1.0.20251114</VersionPrefix>
 	  <VersionSuffix>beta</VersionSuffix>
 
 	  <Authors>Hgnim</Authors>

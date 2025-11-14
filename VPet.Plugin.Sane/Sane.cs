@@ -108,7 +108,8 @@ namespace VPet.Plugin.Sane
 			nowWork= null;
 		}
 		void TakeItem(Food food) {
-			dat.SaneTempValue += food.Health * 0.5;
+			if(food.Health>0)
+				dat.SaneTempValue += food.Health * 0.6;//通过食物恢复些许理智
 		}
 		void SaneValue_Change(double value) =>
 			//调用UI线程
@@ -172,6 +173,9 @@ namespace VPet.Plugin.Sane
 						}
 						break;
 				}
+			}
+			else if (MW.Main.State == VPet_Simulator.Core.Main.WorkingState.Sleep) {
+				dat.SaneValue += 1.2;//睡觉时恢复理智
 			}
 			else {
 				dat.SaneValue += 0.01;//静止时缓慢恢复理智
