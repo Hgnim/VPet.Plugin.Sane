@@ -158,7 +158,7 @@ namespace VPet.Plugin.Sane
 					case Work.WorkType.Work:
 					case Work.WorkType.Study: {
 							double changv = -nowWork.Feeling * 0.8;
-							while (Math.Abs(changv) > 0.2) {
+							while (Math.Abs(changv) > 0.05) {
 								changv *= 0.3;//减小变化计算
 							}
 							dat.SaneValue += changv;
@@ -166,7 +166,7 @@ namespace VPet.Plugin.Sane
 						break;
 					case Work.WorkType.Play: {
 							double changv = -nowWork.Feeling;
-							while (Math.Abs(changv) > 1) {
+							while (Math.Abs(changv) > 0.8) {
 								changv *= 0.5;
 							}
 							dat.SaneValue += changv;
@@ -175,7 +175,7 @@ namespace VPet.Plugin.Sane
 				}
 			}
 			else if (MW.Main.State == VPet_Simulator.Core.Main.WorkingState.Sleep) {
-				dat.SaneValue += 1.2;//睡觉时恢复理智
+				dat.SaneValue += 1;//睡觉时恢复理智
 			}
 			else {
 				dat.SaneValue += 0.01;//静止时缓慢恢复理智

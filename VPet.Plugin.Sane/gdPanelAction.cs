@@ -45,6 +45,7 @@ namespace VPet.Plugin.Sane {
 			item.progressBar.Opacity = 1;
 			item.progressBar.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#EEEEEE"));
 			item.progressBar.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#BCBCBC"));
+			ProgressBarHelper.AddGeneratingPercentTextHandler(item.progressBar, ProgressBar_Change);//进度条更改时调用
 			ProgressBarHelper.SetIsPercentVisible(item.progressBar, true);
 			grid.Children.Add(item.progressBar);
 			Grid.SetRow(item.progressBar, barIndex);
@@ -59,6 +60,7 @@ namespace VPet.Plugin.Sane {
 		/// <param name="grid">目标Grid</param>
 		internal GdPanelAction(IMainWindow MW, GdPanelItem item_,Grid grid) {
 			item = item_;
+			lastValue = item.progressBar.Value;
 			AddBar(grid);
 			ChangeForeground(MW);
 		}
@@ -75,6 +77,12 @@ namespace VPet.Plugin.Sane {
 		/// <param name="customBr">自定义刷子。如果留空则使用默认</param>
 		internal void ChangeForeground(IMainWindow MW,Brush customBr=null) =>
 			item.progressBar.Foreground = customBr ?? GetForeground(MW, item.progressBar.Value / 100);
+		/// <summary>
+		/// 更改进度条时触发<br/>
+		/// 用于修改进度条中的文本
+		/// </summary>
+		private void ProgressBar_Change(object sender, GeneratingPercentTextRoutedEventArgs e) =>
+			e.Text = $"{item.progressBar.Value:f2} / {item.progressBar.Maximum:f0}";
 		double lastValue = 0;
 		/// <summary>
 		/// 更改进度条的值
