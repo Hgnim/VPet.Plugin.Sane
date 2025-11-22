@@ -6,19 +6,19 @@
 	<UseWPF>true</UseWPF>
 	<ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
 
-	  <AssemblyVersion>1.1.1.1115</AssemblyVersion>
-	  <FileVersion>1.1.1.1115</FileVersion>
-	  <VersionPrefix>1.1.1.20251115</VersionPrefix>
-	  <VersionSuffix>beta</VersionSuffix>
+	  <AssemblyVersion>1.1.2.1122</AssemblyVersion>
+	  <FileVersion>1.1.2.1122</FileVersion>
+	  <VersionPrefix>1.1.2.20251122</VersionPrefix>
+	  <VersionSuffix></VersionSuffix>
 
 	  <Authors>Hgnim</Authors>
 	  <Company>$(Authors)</Company>
 	  <Owners>$(Authors)</Owners>
-	  <Product>VPet.Plugin.Sane</Product>
+	  <Product>Sane</Product>
 	  <Title>桌宠理智插件</Title>
 	  <AssemblyTitle>$(Title)</AssemblyTitle>
 	  <Description>Sane</Description>
-	  <AssemblyName>Sane</AssemblyName>
+	  <AssemblyName>VPet.Plugin.Sane</AssemblyName>
   </PropertyGroup>
 
   <ItemGroup>
